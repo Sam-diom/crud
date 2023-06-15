@@ -17,7 +17,7 @@ class SQLHelper {
 
   static Future<sql.Database> db() async {
     return sql.openDatabase(
-      'kindacode.db',
+      'mesnotes.db',
       version: 1,
       onCreate: (sql.Database database, int version) async {
         await createTables(database);
@@ -28,7 +28,6 @@ class SQLHelper {
   // Create new item (journal)
   static Future<int> createItem(String title, String? descrption) async {
     final db = await SQLHelper.db();
-
     final data = {'title': title, 'description': descrption};
     final id = await db.insert('items', data,
         conflictAlgorithm: sql.ConflictAlgorithm.replace);
