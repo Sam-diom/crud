@@ -30,14 +30,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   // Toutes les notes
-  List<Map<String, dynamic>> _journals = [];
+  List<Map<String, dynamic>> _notes = [];
 
   bool _isLoading = true;
   // Récuperation de toutes les donnée de la bd
   void _refreshJournals() async {
     final data = await SQLHelper.getItems();
     setState(() {
-      _journals = data;
+      _notes = data;
       _isLoading = false;
     });
   }
@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
       // id == null -> create new item
       // id != null -> update an existing item
       final existingJournal =
-          _journals.firstWhere((element) => element['id'] == id);
+          _notes.firstWhere((element) => element['id'] == id);
       _titleController.text = existingJournal['title'];
       _descriptionController.text = existingJournal['description'];
     }
@@ -136,12 +136,78 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Supprimer une note
-  void _deleteItem(int id) async {
-    await SQLHelper.deleteItem(id);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Votre note a bien été supprimée!'),
-    ));
-    _refreshJournals();
+  // void _deleteItem(int id) async {
+  //   await SQLHelper.deleteItem(id);
+  //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+  //     content: Text('Votre note a bien été supprimée!'),
+  //   ));
+  //   _refreshJournals();
+  // }
+
+  // void _deleteItem(int id, String title) async {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text('Confirmation'),
+  //         content: Text('Voulez-vous vraiment supprimer cette note ?'),
+  //         actions: [
+  //           TextButton(
+  //             child: Text('Annuler'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //           TextButton(
+  //             child: Text('Supprimer'),
+  //             onPressed: () async {
+  //               await SQLHelper.deleteItem(id);
+  //               ScaffoldMessenger.of(context).showSnackBar(
+  //                 const SnackBar(
+  //                   content: Text('Votre note "$title" a bien été supprimée!'),
+  //                 ),
+  //               );
+  //               _refreshJournals();
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+  void _deleteItem(int id, String title) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmation'),
+          content: Text('Voulez-vous vraiment supprimer la note "$title" ?'),
+          actions: [
+            TextButton(
+              child: Text('Annuler'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Supprimer'),
+              onPressed: () async {
+                await SQLHelper.deleteItem(id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('La note "$title" a bien été supprimée!'),
+                  ),
+                );
+                _refreshJournals();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -155,25 +221,25 @@ class _HomePageState extends State<HomePage> {
               child: CircularProgressIndicator(),
             )
           : ListView.builder(
-              itemCount: _journals.length,
+              itemCount: _notes.length,
               itemBuilder: (context, index) => Card(
                 color: Color.fromARGB(255, 196, 201, 204),
                 margin: const EdgeInsets.all(15),
                 child: ListTile(
-                    title: Text(_journals[index]['title']),
-                    subtitle: Text(_journals[index]['description']),
+                    title: Text(_notes[index]['title']),
+                    subtitle: Text(_notes[index]['description']),
                     trailing: SizedBox(
                       width: 100,
                       child: Row(
                         children: [
                           IconButton(
                             icon: const Icon(Icons.edit),
-                            onPressed: () => _showForm(_journals[index]['id']),
+                            onPressed: () => _showForm(_notes[index]['id']),
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete),
-                            onPressed: () =>
-                                _deleteItem(_journals[index]['id']),
+                            onPressed: () => _deleteItem(
+                                _notes[index]['id'], _notes[index]['title']),
                           ),
                         ],
                       ),
